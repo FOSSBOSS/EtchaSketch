@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+    xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" 
+   id="svg8" version="1.1" viewBox="0 0 227.35277 156.29323"
+   height="6.1532764in"
+   width="8.9508963in"
+   sodipodi:docname="etchasketchborder.svg">
+    <defs
+     id="defs2" />
+  <path
+     style="fill:#ff0000;stroke:#ff0000;stroke-width:1.32300019;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 12.000819,0.66145838 c -6.2819637,0 -11.33936062,5.05739692 -11.33936062,11.33936062 V 144.29249 c 0,6.28197 5.05739692,11.33936 11.33936062,11.33936 H 215.35224 c 6.28197,0 11.33885,-5.05739 11.33885,-11.33936 V 12.000819 c 0,-6.2819637 -5.05688,-11.33936062 -11.33885,-11.33936062 z M 18.932696,12.696383 H 205.5854 c 5.02557,0 9.07128,4.04571 9.07128,9.071282 v 77.03923 c 0,5.025575 -4.04571,9.071285 -9.07128,9.071285 H 18.932696 c -5.025572,0 -9.0712819,-4.04571 -9.0712819,-9.071285 v -77.03923 c 0,-5.025572 4.0457099,-9.071282 9.0712819,-9.071282 z"
+    />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:1;stroke:#ff0000;stroke-width:1.32300007;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     cx="21.16666"
+     cy="130.59085"
+     rx="10.583334"
+     ry="9.0714283" />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:1;stroke:#ff0000;stroke-width:1.32300007;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     cx="200.62982"
+     cy="131.57361"
+     rx="10.583334"
+     ry="9.0714283" />
+      </svg>
