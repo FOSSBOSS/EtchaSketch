@@ -7,11 +7,14 @@ File dataFile;
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
-//10.71.148.177
+//10.71.148.177 home 
 IPAddress ip(10, 71, 148, 177);
 //IPAddress ip(10, 1, 0, 177);
 EthernetServer server(80);
 //Function defs
+void rotorSense(EthernetClient client);
+void rotorA(EthernetClient client);
+void rotorB(EthernetClient client);
 void startPage(EthernetClient client);
 void endPage(EthernetClient client);
 void svgHeader(EthernetClient client);
@@ -22,7 +25,7 @@ void pageWrite(EthernetClient client);
 void listenClient(EthernetClient client);
 void background(EthernetClient client); //only want to do this one once, maybe I can run an Iframe or something
 void sensors();//pots
- 
+/**Pot Vars**/ 
 int potX = A0;    
 int potY = A1;    
  
@@ -31,11 +34,52 @@ int sensorValY = 0;
  
 int oldX = 0;
 int oldY = 0;
+
+/**Rotor Vars**/
+// Rotary Encoder Input efintions
+#define CLKA 2
+#define DTA 3
+#define SWA 4
+
+#define CLKB 5
+#define DTB 6
+#define SWB 7
+
+int Acounter = 0;
+int Bcounter = 0;
+
+int AcurrentStateCLK;
+int BcurrentStateCLK;
+
+int AlastStateCLK;
+int BlastStateCLK;
+
+String AcurrentDir ="";  //just easier than cleverly combining this string for seprate IO
+String BcurrentDir ="";
+
+unsigned long AlastButtonPress = 0;
+unsigned long BlastButtonPress = 0;
+//
+
    
 void setup() {
 
   delay(5000);  //you want this delay. reason: tl;dr
-  Serial.begin(9600);
+  /** Set encoder pins as inputs **/
+  pinMode(CLKA,INPUT);
+  pinMode(DTA,INPUT);
+  pinMode(SWA, INPUT_PULLUP);
+  pinMode(CLKB,INPUT);
+  pinMode(DTB,INPUT);
+  pinMode(SWB, INPUT_PULLUP);
+
+  // Read the initial state of CLK
+  AlastStateCLK = digitalRead(CLKA);
+  BlastStateCLK = digitalRead(CLKB);
+  /***End Rotary Encoder vars****/
+  
+  Serial.begin(9600); 
+
   Ethernet.begin(mac, ip);
 
 if (Ethernet.linkStatus() == LinkOFF) {
@@ -56,8 +100,6 @@ if (Ethernet.linkStatus() == LinkOFF) {
 /****SD CARD and Ethernet intialized*****/  
 //if data file (on SD Card) Doesn't exist, create it. 
 //if data file (on SD Card) does exist errase it and create a new one
-
-
   if (SD.exists("datalog.txt")) {
     Serial.println("datalog.txt exists: \n Removing it.");
     SD.remove("datalog.txt");
@@ -201,6 +243,8 @@ client.println ("</svg>");
   }
 
 void background(EthernetClient client){
+//  client.println();
+
 client.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 "<svg"
 "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:cc=\"http://creativecommons.org/ns#\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""
@@ -229,3 +273,86 @@ client.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"
 "ry=\"9.0714283\" />"
 "</svg>");
   }  
+
+ void rotorA(EthernetClient client){
+ // Read the current state of CLK
+  AcurrentStateCLK = digitalRead(CLKA);
+
+  // If last and current state of CLK are different, then pulse occurred
+  // React to only 1 state change to avoid double count
+  if (AcurrentStateCLK != AlastStateCLK  && AcurrentStateCLK == 1){
+
+    // If the DT state is different than the CLK state then
+    // the encoder is rotating CCW so decrement
+    if (digitalRead(DTA) != AcurrentStateCLK) {
+      Acounter --;
+      AcurrentDir ="CCW";
+    } else {
+      // Encoder is rotating CW so increment
+      Acounter ++;
+      AcurrentDir ="CW";
+    }
+    Serial.print("A Direction: ");
+    Serial.print(AcurrentDir);
+    Serial.print(" | Counter: ");
+    Serial.println(Acounter);
+  }
+  int AbtnState = digitalRead(SWA);
+
+  //If we detect LOW signal, button is pressed
+  if (AbtnState == LOW) {
+    //if 50ms have passed since last LOW pulse, it means that the
+    //button has been pressed, released and pressed again
+    if (millis() - AlastButtonPress > 500) {
+      Serial.println("Button A pressed!");
+    }
+  AlastButtonPress = millis();
+  }
+  // Remember last CLK state
+  AlastStateCLK = AcurrentStateCLK;
+//endA
+
+
+  }
+void rotorB(EthernetClient client){
+  
+  BcurrentStateCLK = digitalRead(CLKB);
+  // If last and current state of CLK are different, then pulse occurred
+  // React to only 1 state change to avoid double count
+  if (BcurrentStateCLK != BlastStateCLK  && BcurrentStateCLK == 1){
+
+    // If the DT state is different than the CLK state then
+    // the encoder is rotating CCW so decrement
+    if (digitalRead(DTB) != BcurrentStateCLK) {
+      Bcounter --;
+      BcurrentDir ="CCW";
+    } else {
+      // Encoder is rotating CW so increment
+      Bcounter ++;
+      BcurrentDir ="CW";
+    }
+
+    Serial.print("B Direction: ");
+    Serial.print(BcurrentDir);
+    Serial.print(" | Counter: ");
+    Serial.println(Bcounter);
+  }  
+  BlastStateCLK = BcurrentStateCLK;
+  // Read the button state
+  int BbtnState = digitalRead(SWB);
+    if (BbtnState == LOW) {
+    //if 50ms have passed since last LOW pulse, it means that the
+    //button has been pressed, released and pressed again
+    if (millis() - BlastButtonPress > 50) {
+      Serial.println("Button B pressed!");
+    }
+  
+ // Remember last button press event
+    BlastButtonPress = millis();
+  }
+//endB
+}
+void rotorSense(EthernetClient client){
+  rotorA(client);
+  rotorB(client);
+  }
