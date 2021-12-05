@@ -20,15 +20,17 @@ EthernetServer server(80);
 void rotors();
 void rotorA(EthernetClient client);
 void rotorB(EthernetClient client);
-
+void resetImg();  //erase datalog.txt
+void Abuton();
+void Bbuton();
 void listenClient(EthernetClient client);
 void pageWrite(EthernetClient client);
 void polyLineBegin(EthernetClient client);
 void startPage(EthernetClient client);
 void endPage(EthernetClient client);
 
-int potX = A0;    
-int potY = A1;    
+//int potX = A0;    
+//int potY = A1;    
  
 int sensorValX = 0;  
 int sensorValY = 0;  
@@ -55,8 +57,10 @@ int BcurrentStateCLK;
 int AlastStateCLK;
 int BlastStateCLK;
 
-String AcurrentDir ="";  //just easier than cleverly combining this string for seprate IO
-String BcurrentDir ="";
+unsigned long AlastButtonPress = 0; //butons on rotory encoders
+unsigned long BlastButtonPress = 0;
+//String AcurrentDir ="";  //just easier than cleverly combining this string for seprate IO
+//String BcurrentDir ="";
    
 void setup() {
 
@@ -199,6 +203,7 @@ int rotorA(){ //X coords
      }
 // Remember last CLK state
   AlastStateCLK = AcurrentStateCLK;
+Abuton(); //errase the data file if A button pressed.  
 //X limits
 if(Acounter<=15){
   Acounter=15;
@@ -220,6 +225,7 @@ int rotorB(){ //Y coords
     //Serial.println(Bcounter);
   }  
   BlastStateCLK = BcurrentStateCLK;
+Bbuton();
 //Y limits
 if(Bcounter<=15){
   Bcounter=15;
@@ -264,3 +270,54 @@ if(sensorValX!=oldX || sensorValY!=oldY){
  oldY=sensorValY;
   
 }//end rotors 
+void resetImg(){
+  //clear datapoints by errasing datafile.
+  if (SD.exists("datalog.txt")) {
+     Serial.println("Deleting data.");
+     while(SD.remove("datalog.txt")!=1){
+       Serial.println("Deleeting old file data");
+       if (SD.remove("datalog.txt")==1){
+          Serial.println ("old dataFile removed");
+       }
+     }   
+  } else {
+    Serial.println("datalog.txt doesn't exist.");
+         }
+
+  // open a new file and immediately close it:
+  Serial.println("Creating datalog.txt...");
+  dataFile = SD.open("datalog.txt", FILE_WRITE);
+  dataFile.close();
+
+  // Check to see if the file exists:
+  if (SD.exists("datalog.txt")) {
+    Serial.println("New datalog.txt created.");
+  } else {
+    Serial.println("datalog.txt wasn't created.");
+         }
+  
+  }//end resetImg
+
+void Abuton(){ //X buton
+    int AbtnState = digitalRead(SWA);
+  //If we detect LOW signal, button is pressed
+if (AbtnState == LOW) {
+    if (millis() - AlastButtonPress > 500) {
+      Serial.println("Resting image!");
+      resetImg();
+    }
+  AlastButtonPress = millis();
+  }
+  } //end Abuton
+  
+void Bbuton(){ //Y buton
+int BbtnState = digitalRead(SWB);
+    if (BbtnState == LOW) {
+    //if 50ms have passed since last LOW pulse, it means that the
+    //button has been pressed, released and pressed again
+    if (millis() - BlastButtonPress > 50) {
+      Serial.println("Button B pressed!");
+    }  
+    BlastButtonPress = millis();
+  }
+}      
